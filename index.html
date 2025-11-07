@@ -341,34 +341,38 @@
 
     /* New styles for interactive terminal */
     #open-terminal {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      z-index: 9999;
+      /* position: fixed; */
+      /* right: 20px; */
+      /* bottom: 20px; */
+      /* z-index: 9999; */
       padding: 10px 14px;
       border-radius: 10px;
       background: #2563eb;
       color: #fff;
       border: none;
       cursor: pointer;
+      margin-top: 10px; /* Add some space below chat input */
     }
     #start-server-btn {
-      position: fixed;
-      right: 180px;
-      bottom: 20px;
-      z-index: 9999;
+      /* position: fixed; */
+      /* right: 180px; */
+      /* bottom: 20px; */
+      /* z-index: 9999; */
       padding: 10px 14px;
       border-radius: 10px;
       background: #10b981;
       color: #fff;
       border: none;
       cursor: pointer;
+      margin-left: 10px; /* Space between buttons */
+      margin-top: 10px; /* Align with terminal button */
     }
 
     #terminal-panel {
-      position: fixed;
-      right: 20px;
-      bottom: 80px;
+      /* position: fixed; */
+      /* right: 20px; */
+      /* bottom: 80px; */
+      /* z-index: 9999; */
       width: 520px;
       max-width: 95%;
       height: 320px;
@@ -376,59 +380,20 @@
       border-radius: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.6);
       overflow: hidden;
-      display: none;
-      z-index: 9999;
+      display: none; /* Keep hidden by default */
+      /* z-index: 9999; */
       border: 2px solid rgba(37,99,235,0.8);
+      margin: 10px auto; /* Center horizontally and add space */
+      flex-direction: column; /* Ensure content stacks vertically when visible */
     }
-    #terminal-panel .terminal-header-bar {
-      background: linear-gradient(90deg,#1e40af,#2563eb);
-      padding: 8px 12px;
-      color: #fff;
-      font-weight: 600;
+    /* Add a container for the buttons to manage their layout */
+    #terminal-buttons-container {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #terminal-panel .close-terminal-btn {
-      background: transparent;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      font-size: 18px;
-    }
-    #terminal-output {
-      padding: 12px;
-      height: 220px;
-      overflow: auto;
-      font-family: Consolas,monospace;
-      color: #d1ffd6;
-      background: #060606;
-      white-space: pre-wrap;
-      font-size: 13px;
-    }
-    #terminal-panel .terminal-input-area {
-      display: flex;
-      gap: 8px;
-      padding: 8px;
-      background: #0b0b0b;
-      border-top: 1px solid rgba(255,255,255,0.03);
-    }
-    #terminal-input {
-      flex: 1;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: #0d0d0d;
-      color: #fff;
-      font-family: Consolas,monospace;
-    }
-    #terminal-send {
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      cursor: pointer;
+      justify-content: center; /* Center buttons */
+      width: 100%;
+      max-width: 900px; /* Align with chat input area */
+      margin: 0 auto; /* Center horizontally */
+      padding: 10px 0;
     }
   </style>
 </head>
@@ -452,6 +417,23 @@
     </div>
   </div>
 
+  <button id="open-terminal">Terminal PowerShell</button>
+  <button id="start-server-btn" style="position:fixed; right:180px; bottom:20px; z-index:9999; padding:10px 14px; border-radius:10px; background:#10b981; color:#fff; border:none; cursor:pointer;">Iniciar Servidor</button>
+
+  <div id="terminal-panel">
+    <div class="terminal-header-bar">
+      <span>Windows PowerShell — Conexão Local</span>
+      <button id="close-terminal" class="close-terminal-btn">✕</button>
+    </div>
+
+    <div id="terminal-output"></div>
+
+    <div class="terminal-input-area">
+      <input id="terminal-input" placeholder='ex: whoami / date / dir' />
+      <button id="terminal-send">Executar</button>
+    </div>
+  </div>
+
   <div id="config-modal">
     <div id="config-box">
       <h3>⚙️ Configurações</h3>
@@ -468,23 +450,6 @@
       <button id="save-config">Salvar Configurações</button>
       <button id="clear-history">🗑️ Apagar todas conversas</button>
       <button id="close-config">Fechar</button>
-    </div>
-  </div>
-
-  <button id="open-terminal">Terminal PowerShell</button>
-  <button id="start-server-btn" style="position:fixed; right:180px; bottom:20px; z-index:9999; padding:10px 14px; border-radius:10px; background:#10b981; color:#fff; border:none; cursor:pointer;">Iniciar Servidor</button>
-
-  <div id="terminal-panel">
-    <div class="terminal-header-bar">
-      <span>Windows PowerShell — Conexão Local</span>
-      <button id="close-terminal" class="close-terminal-btn">✕</button>
-    </div>
-
-    <div id="terminal-output"></div>
-
-    <div class="terminal-input-area">
-      <input id="terminal-input" placeholder='ex: whoami / date / dir' />
-      <button id="terminal-send">Executar</button>
     </div>
   </div>
 
