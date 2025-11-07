@@ -1,6 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
-cd /d "%~dp0"
+set "PROJECT_DIR=%~dp0"
+
+if not exist "%PROJECT_DIR%" (
+    mkdir "%PROJECT_DIR%"
+    echo Pasta "%PROJECT_DIR%" criada.
+)
+
+cd /d "%PROJECT_DIR%"
 
 echo ============================================
 echo   Iniciando instalação do Chat IA Gemini...
