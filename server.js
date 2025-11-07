@@ -1,50 +1,122 @@
+// server.js  — RODAR LOCALMENTE APENAS
+// Requisitos: node >= 16
 const express = require('express');
-const { exec } = require('child_process');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
-const cors = require('cors');
+const fetch = require('node-fetch'); // npm i node-fetch
+const { exec } = require('child_process');
 
 const app = express();
-const PORT = 3001;
-const TOKEN = 'um-token-muito-forte-que-so-eu-conheco'; // Use o mesmo token do frontend
+app.use(helmet());
+app.use(bodyParser.json({ limit: '200kb' }));
 
-app.use(bodyParser.json());
-app.use(cors()); // Permite requisições de qualquer origem. Em produção, configure para origens específicas.
+// CONFIGURAÇÃO — defina variáveis de ambiente antes de rodar
+const PORT = process.env.PORT || 3001;
+const BIND_ADDR = '127.0.0.1';
+const SECRET = process.env.TERMINAL_TOKEN || 'troque-por-um-token-muito-forte';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''; // sua chave Gemini
 
-// Middleware de autenticação simples
-app.use((req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-    if (token === TOKEN) {
-      next();
-    } else {
-      res.status(403).json({ error: 'Token inválido.' });
-    }
-  } else {
-    res.status(401).json({ error: 'Token de autenticação necessário.' });
+if (!GEMINI_API_KEY) {
+  console.warn('Aviso: GEMINI_API_KEY não definido. Defina a variável de ambiente antes de usar.');
+}
+
+// Função simples de checagem de autenticação via Bearer token
+function checkAuth(req, res, next) {
+  const auth = req.headers['authorization'] || '';
+  if (!auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+  const token = auth.slice(7);
+  if (token !== SECRET) return res.status(403).json({ error: 'Forbidden' });
+  next();
+}
+
+// OPTIONAL: Lista branca de comandos (apenas exemplos).
+// Se preferir permissivo, mantenha a lista vazia e confie na confirmação manual.
+const WHITELIST = [
+  // comandos simples permitidos
+  '^whoami$',
+  '^date$',
+  '^uptime$',
+  '^ls($|\\s)',
+  '^dir($|\\s)',
+  '^echo\\s.+',
+  '^systeminfo$',
+  '^ping\\s+\\S+$'
+].map(r => new RegExp(r, 'i'));
+
+// Utilitário: verifica se o comando é permitido
+function isAllowedCommand(cmd) {
+  if (!WHITELIST || WHITELIST.length === 0) return true; // permitir se lista vazia
+  return WHITELIST.some(rx => rx.test(cmd.trim()));
+}
+
+// Endpoint: pedir à IA sugestões de comando (não executa)
+app.post('/suggest', checkAuth, async (req, res) => {
+  const { prompt } = req.body || {};
+  if (!prompt || typeof prompt !== 'string') return res.status(400).json({ error: 'Prompt inválido' });
+
+  // Monte um system prompt claro: IA deve retornar comandos sugeridos, com explicação breve
+  const systemPrompt = `Você é um assistente que sugere comandos de PowerShell/CLI para executar em um ambiente controlado.
+Retorne uma resposta JSON com campo "suggestions": array de objetos { "command": "...", "explanation": "..." }.
+Apenas comandos aprovados serão executados manualmente pelo usuário.`;
+
+  try {
+    // Chamada genérica para a API do Gemini (exemplo; adapte conforme o endpoint real)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(process.env.GEMINI_MODEL || 'gemini-2.0')} :generateContent?key=${GEMINI_API_KEY}`;
+    // Observação: confirme formato de request/response da sua versão da API Gemini e adapte.
+    const body = {
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      // user content
+      contents: [{ parts: [{ text: prompt }] }],
+      // opções conforme API (ajuste conforme docs)
+      temperature: 0.2,
+      maxOutputTokens: 512
+    };
+
+    const r = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const data = await r.json();
+    // Aqui depende de como a API retorna texto. Ajuste conforme sua resposta real.
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data).slice(0,2000);
+
+    // O ideal é que a IA retorne JSON; se não retornar, você pode tentar extrair linhas que pareçam comandos.
+    // Para máxima segurança, retornamos 'raw' e deixamos o cliente mostrar pro usuário.
+    res.json({ ok: true, raw: text });
+  } catch (err) {
+    console.error('Erro /suggest:', err);
+    res.status(500).json({ error: 'Erro ao contatar a API Gemini', details: String(err) });
   }
 });
 
-app.post('/exec', (req, res) => {
-  const { command } = req.body;
+// Endpoint: executar comando (só com token e após checagens)
+// Repare: este endpoint executa comandos no host — USE SOMENTE EM LOCALHOST e COM TOKEN SEGURO.
+app.post('/exec', checkAuth, (req, res) => {
+  const { command, requireWhitelist } = req.body || {};
+  if (!command || typeof command !== 'string') return res.status(400).json({ error: 'Comando inválido' });
 
-  if (!command) {
-    return res.status(400).json({ error: 'Comando não fornecido.' });
+  // Segurança: bloquear uso de caracteres perigosos por padrão (pipes, redirecionamentos, etc.)
+  if (/[|&;<>]/.test(command)) {
+    return res.status(400).json({ error: 'Comando contém caracteres proibidos (| & ; < >).' });
   }
 
-  // CUIDADO: Executar comandos arbitrários pode ser um risco de segurança grave.
-  // Certifique-se de que esta aplicação só é acessível em um ambiente seguro (ex: localhost)
-  // e que os comandos são validados ou restritos a um conjunto seguro.
-  exec(command, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`exec error: ${error}`);
-      return res.json({ error: error.message, stdout, stderr });
+  // Se for requerido, verifique lista branca
+  if (requireWhitelist && !isAllowedCommand(command)) {
+    return res.status(403).json({ error: 'Comando não está na lista branca.' });
+  }
+
+  // Executa com timeout e limite de buffer
+  exec(command, { timeout: 15_000, maxBuffer: 5 * 1024 * 1024 }, (err, stdout, stderr) => {
+    if (err) {
+      return res.json({ ok: false, stdout: stdout || '', stderr: stderr || '', error: String(err) });
     }
-    res.json({ stdout, stderr });
+    res.json({ ok: true, stdout, stderr });
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor de terminal rodando em http://localhost:${PORT}`);
-  console.log('Lembre-se: Executar comandos arbitrários é um risco de segurança. Use com cautela.');
+app.listen(PORT, BIND_ADDR, () => {
+  console.log(`Servidor terminal local rodando em http://${BIND_ADDR}:${PORT}`);
+  console.log('USE APENAS LOCAL. Configure GEMINI_API_KEY e TERMINAL_TOKEN nas variáveis de ambiente.');
 });
