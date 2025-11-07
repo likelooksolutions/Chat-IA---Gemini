@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "start": "node server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
@@ -31,5 +32,18 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
-  }
+  },
+  "description": "**Chat IA - Gemini 2.0** é um projeto de chatbot inteligente e personalizável, desenvolvido para oferecer uma experiência de conversa natural, eficiente e com identidade própria. Ideal para aplicações que exigem interação humana simulada, suporte técnico ou assistentes virtuais com personalidade definida.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juliocamposmachado/Chat-IA---Gemini.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juliocamposmachado/Chat-IA---Gemini/issues"
+  },
+  "homepage": "https://github.com/juliocamposmachado/Chat-IA---Gemini#readme"
 }
