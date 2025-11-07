@@ -263,7 +263,7 @@
       border-top: 1px solid rgba(51, 65, 85, 0.5);
     }
 
-    #open-terminal, #start-server-btn {
+    #open-terminal, #start-server-btn, #download-server-btn {
       padding: 12px 20px;
       border-radius: 10px;
       border: none;
@@ -284,6 +284,11 @@
       color: white;
     }
 
+    #download-server-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* Example color */
+      color: white;
+    }
+
     #open-terminal:hover {
       background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
       transform: translateY(-2px);
@@ -291,6 +296,11 @@
 
     #start-server-btn:hover {
       background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-2px);
+    }
+
+    #download-server-btn:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
       transform: translateY(-2px);
     }
 
@@ -511,6 +521,7 @@
     <div id="terminal-buttons-container">
       <button id="open-terminal">🖥️ Terminal PowerShell</button>
       <button id="start-server-btn">🚀 Iniciar Servidor</button>
+      <button id="download-server-btn">⬇️ Baixar Server.js</button>
     </div>
 
     <div id="terminal-panel">
@@ -579,10 +590,11 @@
     const terminalInput = document.getElementById('terminal-input');
     const terminalSendBtn = document.getElementById('terminal-send');
     const startServerBtn = document.getElementById('start-server-btn');
+    const downloadServerBtn = document.getElementById('download-server-btn');
 
     // Server configuration
-    const SERVER_URL = 'http://localhost:3000/exec';
-    const TOKEN = 'terminal-secret-token-2024';
+    const SERVER_URL = 'http://127.0.0.1:3001/exec';
+    const TOKEN = 'um-token-muito-forte-que-so-eu-conheco'; // coloque mesmo token do servidor (ou obtenha dinamicamente)
 
     function createNewConversation() {
       const id = "conv_" + Date.now();
@@ -905,6 +917,28 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         executeTerminalCommand();
+      }
+    });
+
+    downloadServerBtn.addEventListener('click', async () => {
+      const serverJsUrl = 'https://raw.githubusercontent.com/juliocamposmachado/Chat-IA---Gemini/master/server.js';
+      try {
+        const response = await fetch(serverJsUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch server.js: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'server.js';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        addTerminalMessage('server.js baixado com sucesso!', 'info');
+      } catch (error) {
+        addTerminalMessage(`Erro ao baixar server.js: ${error.message}`, 'error');
       }
     });
 
