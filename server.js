@@ -14,7 +14,7 @@ app.use(helmet());
 app.use(bodyParser.json({ limit: '200kb' }));
 
 const PORT = process.env.PORT || 3001;
-const BIND_ADDR = 'https://85cf818df1d7.ngrok-free.app -> http://localhost:3001';
+const BIND_ADDR = process.env.BIND_ADDR || 'https://85cf818df1d7.ngrok-free.app -> http://localhost:3001';
 const SECRET = process.env.TERMINAL_TOKEN || 'um-token-muito-forte-que-so-eu-conheco';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
@@ -182,10 +182,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.listen(PORT, BIND_ADDR, () => {
+app.listen(PORT, () => {
   console.log('='.repeat(60));
   console.log('Terminal PowerShell Real - Servidor Online');
-  console.log(`URL: https://85cf818df1d7.ngrok-free.app -> http://localhost:3001`);
+  console.log(`URL: ${BIND_ADDR}`);
   console.log(`Token: ${SECRET}`);
   console.log(`Diretório inicial: ${currentWorkingDir}`);
   console.log('='.repeat(60));
