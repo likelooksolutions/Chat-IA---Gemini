@@ -508,8 +508,7 @@
       box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4) !important;
     }
 
-    @media (max-width: 768px) {
-      #sidebar { width: 600px; }
+    @media (max-width: 100%) {
       .msg { max-width: 90%; }
       #input-area { padding: 12px; }
       #terminal-panel { height: 600px; }
@@ -524,69 +523,43 @@
     <div id="new-chat">+ Nova Conversa</div>
   </div>
 
-  <div id="main">
-    <button id="toggle-btn">☰</button>
-    <button id="config-btn">⚙️</button>
-    <header>Chat IA - Gemini 2.0</header>
+  <div id="main-content">
+    <!-- Chat Interface -->
+    <div id="chat-container">
+      <div id="chat"></div>
 
-    <div id="chat"></div>
-
-    <div id="input-area">
-      <textarea id="user-input" placeholder="Digite sua mensagem..."></textarea>
-      <button id="send-btn">Enviar</button>
-    </div>
-
-    <div id="terminal-buttons-container">
-      <button id="open-terminal">Terminal PowerShell Real</button>
-      <button id="start-server-btn">Iniciar Servidor</button>
-      <button id="download-server-btn">Baixar Server.js</button>
-      <button id="download-installer-btn">Baixar Instalador</button>
-    </div>
-
-    <div id="terminal-panel">
-  <div class="terminal-header-bar">
-    <span>Terminal PowerShell Simulado</span>
-    <button id="close-terminal" class="close-terminal-btn">✕</button>
-  </div>
-
-
-
-      <div id="terminal-output"></div>
-      <div class="terminal-input-area">
-        <input id="terminal-input" placeholder='Digite: git status, cd C:\projetos, dir, ls, pwd...' />
-        <button id="terminal-send">Executar</button>
+      <div id="input-area">
+        <textarea id="user-input" placeholder="Digite sua mensagem..."></textarea>
+        <button id="send-btn">Enviar</button>
       </div>
     </div>
-       <!-- iframe com o site do terminal -->
-  <iframe 
-    src="https://web-terminal-simulat-f2rh.bolt.host/" 
-    width="100%" 
-    height="100%" 
-    style="border: none; background: #000;"
-    title="Web Terminal Simulado">
-  </iframe>
-</div>
 
+    <!-- Configuration Modal (initially hidden) -->
+    <div id="config-modal" class="modal">
+      <div class="modal-content">
+        <h2>Configuration</h2>
+        <!-- API Key, Model, Persona inputs -->
+        <button id="save-config-btn">Save</button>
+        <button id="close-config-btn">Close</button>
+        <button id="clear-history">Clear Chat History</button>
+      </div>
+    </div>
 
-
-  </div>
-
-  <div id="config-modal">
-    <div id="config-box">
-      <h3>⚙️ Configurações</h3>
-      <label for="api-key">Chave da API Gemini:</label>
-      <input type="text" id="api-key" placeholder="Insira sua chave aqui..." />
-
-      <label for="model">Modelo Gemini:</label>
-      <input type="text" id="model" placeholder="ex: gemini-2.0-flash-exp" />
-
-      <label for="persona">Persona da IA:</label>
-      <textarea id="persona" placeholder="Defina a persona da IA aqui (ex: você é um especialista em IA e programação full stack)..." style="min-height: 60px; resize: vertical;"></textarea>
-      <div id="persona-preview"></div>
-
-      <button id="save-config">Salvar Configurações</button>
-      <button id="clear-history">🗑️ Apagar todas conversas</button>
-      <button id="close-config">Fechar</button>
+    <!-- Interactive Terminal Panel (initially hidden) -->
+    <div id="terminal-panel" class="modal">
+      <div class="modal-content">
+        <h2>Terminal</h2>
+        <div id="terminal-output">
+          <!-- Terminal command output will be displayed here -->
+        </div>
+        <div id="terminal-input-area">
+          <input type="text" id="terminal-input" placeholder="Enter command...">
+          <button id="terminal-send">Execute</button>
+        </div>
+        <div id="terminal-buttons-container">
+          <button id="close-terminal">Close Terminal</button>
+        </div>
+      </div>
     </div>
   </div>
 
