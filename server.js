@@ -108,7 +108,9 @@ app.post('/exec', checkAuth, (req, res) => {
   }
 
   // Executa com timeout e limite de buffer
-  exec(command, { timeout: 15_000, maxBuffer: 5 * 1024 * 1024 }, (err, stdout, stderr) => {
+  const containerCmd = `docker exec powershell-container pwsh -Command "${command}"`;
+exec(containerCmd, { timeout: 15_000, maxBuffer: 5 * 1024 * 1024 }, (err, stdout, stderr) => {
+
     if (err) {
       return res.json({ ok: false, stdout: stdout || '', stderr: stderr || '', error: String(err) });
     }
