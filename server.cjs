@@ -1,4 +1,4 @@
-// server.js — RODAR LOCALMENTE APENAS
+// server.cjs — RODAR LOCALMENTE APENAS
 // Requisitos: node >= 16
 const express = require('express');
 const helmet = require('helmet');
